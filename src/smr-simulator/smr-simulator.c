@@ -173,7 +173,9 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 		                exit(-1);
 			}
 			bandused[Offset] = 1;
+			//
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
+		    //
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
 		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag));
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
