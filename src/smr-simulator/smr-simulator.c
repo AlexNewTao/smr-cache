@@ -192,8 +192,10 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 		}
 	}
 	
+	//访问各个block；BNDSZ/BLCKSZ为一个band中block的个数
 	for (i = 0; i < BNDSZ/BLCKSZ; i++)
 	{
+		//如果bandused[i] == 0；读数
 		if (bandused[i] == 0) {
 			returnCode = pread(smr_fd, band[i], BLCKSZ, (BandNum * BNDSZ / BLCKSZ + i) * BLCKSZ);
 			if(returnCode < 0) {
@@ -202,7 +204,7 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 			}
 		}
 	}
-
+	//把读出来的数写到smr中
 	returnCode = pwrite(smr_fd, band, BNDSZ, BandNum * BNDSZ);
 	if(returnCode < 0) {
 		printf("[ERROR] flushSSD():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, BandNum * BNDSZ);

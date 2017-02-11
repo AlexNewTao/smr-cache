@@ -51,13 +51,19 @@ long ssdtableLookup(SSDTag *ssd_tag, unsigned long hash_code)
 
 long ssdtableDelete(SSDTag *ssd_tag, unsigned long hash_code)
 {
+	//
 	if (DEBUG)
 		printf("[INFO] Delete ssd_tag: %lu, hash_code=%lu\n",ssd_tag->offset, hash_code);
+
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
+	//声明delete id
 	long del_id;
+
 	SSDHashBucket *delitem;
 	nowbucket->next_item;
+	//遍历bucket，且不为最后一个
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {
+		//找到需要删除的ssd id，保存
 		if (isSamessd(&nowbucket->next_item->hash_key, ssd_tag)) {
 			del_id = nowbucket->next_item->ssd_id;
 			break;
@@ -65,10 +71,14 @@ long ssdtableDelete(SSDTag *ssd_tag, unsigned long hash_code)
 		nowbucket = nowbucket->next_item;
 	}
 	//printf("not found2\n");
+	//如果指向末尾
 	if (isSamessd(&nowbucket->hash_key, ssd_tag)) {
 		del_id = nowbucket->ssd_id;
 	}
 	//printf("not found3\n");
+
+
+	//释放空间，不为最后一个
 	if (nowbucket->next_item != NULL) {
 		delitem = nowbucket->next_item;
 		nowbucket->next_item = nowbucket->next_item->next_item;
@@ -76,7 +86,9 @@ long ssdtableDelete(SSDTag *ssd_tag, unsigned long hash_code)
 		return del_id;
 	}
 	else {
+		//最后一个
 		delitem = nowbucket->next_item;
+		//置空
 		nowbucket->next_item = NULL;
 		free(delitem);
 		return del_id;
