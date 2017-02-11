@@ -46,6 +46,13 @@ void initSSDBuffer()
 }
 
 
+static void * initStrategySSDBuffer(SSDEvictionStrategy strategy)
+{
+    if (strategy == CLOCK)
+        initSSDBufferForClock();
+    else if (strategy == LRU)
+        initSSDBufferForLRU();
+}
 
 
 
