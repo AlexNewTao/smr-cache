@@ -28,5 +28,21 @@ int main()
 	//初始化ssdbuffer
 	initSSDBuffer();
 
+	//smr文件描述符；O_RDWR 以可读写方式打开文件；O_SYNC 以同步的方式打开文件.
+	smr_fd = open(smr_device, O_RDWR|O_SYNC);
+
+	//ssd文件描述符；O_RDWR 以可读写方式打开文件；O_SYNC 以同步的方式打开文件.
+    ssd_fd = open(ssd_device, O_RDWR|O_SYNC);
+
+    //inner ssd文件描述符；O_RDWR 以可读写方式打开文件；O_SYNC 以同步的方式打开文件.
+    inner_ssd_fd = open(inner_ssd_device, O_RDWR|O_SYNC);
+
+    //io调用文件
+    trace_to_iocall(trace_file_path);
+
+    
+
+
+
 
 }
