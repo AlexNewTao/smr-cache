@@ -1,6 +1,0 @@
-/*
-    
-
-    ssd cache function
-
-*/
