@@ -181,11 +181,13 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 			}
 			//更改标志
 			bandused[Offset] = 1;
-			//
+			//得到hashcode
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
-		    //
+		    //得到id号
 		    long tmp_id = ssdtableLookup(&ssd_descriptors[i%NSSDs].ssd_tag, tmp_hash);
+		    //删除ssdtable
 		    ssdtableDelete(&ssd_descriptors[i%NSSDs].ssd_tag, ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag));
+		    //更改标志位
 			ssd_descriptors[i%NSSDs].ssd_flag = 0;
 		}
 	}
