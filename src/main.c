@@ -13,6 +13,8 @@ int main()
 	char trace_file_path[]="../trace_for_test.txt";
 	//初始化ssd参数
 	initSSD();
+	//初始化ssdbuffer
+	initSSDBuffer();
 
 
 }
