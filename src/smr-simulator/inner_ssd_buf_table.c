@@ -13,6 +13,7 @@ void initSSDTable(size_t size)
 	}
 }
 
+//得到ssdtable的hashcode
 unsigned long ssdtableHashcode(SSDTag *ssd_tag)
 {
 	unsigned long ssd_hash = (ssd_tag->offset / SSD_BUFFER_SIZE) % NSSDTables;

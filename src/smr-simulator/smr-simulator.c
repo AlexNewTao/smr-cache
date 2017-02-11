@@ -158,20 +158,28 @@ static volatile void* flushSSD(SSDDesc *ssd_hdr)
 
 	//pread是一个函数，用于带偏移量地原子的从文件中读取数据。
 	returnCode = pread(inner_ssd_fd, band[GetSMROffsetInBandFromSSD(ssd_hdr)], BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+	//如果读数出错，就输出对应的错误信息：fd,errorcode,offset;errorcode 表示pread函数读书出错返回的值；
 	if(returnCode < 0) {
 		printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
         exit(-1);
 	}
 
+	//遍历所有sdd中使用的单元；
 	for (i = ssd_strategy_control->first_usedssd; i < ssd_strategy_control->first_usedssd+ssd_strategy_control->n_usedssd; i++)
 	{
+		//ssd_descriptors[i%NSSDs].ssd_flag & SSD_VALID 
+		//GetSMRBandNumFromSSD(&ssd_descriptors[i%NSSDs]) == BandNum
 		if (ssd_descriptors[i%NSSDs].ssd_flag & SSD_VALID && GetSMRBandNumFromSSD(&ssd_descriptors[i%NSSDs]) == BandNum) {
+			//得到当前处理数据在ssd中的偏移量。
 			Offset = GetSMROffsetInBandFromSSD(&ssd_descriptors[i%NSSDs]);
+			//读取数据
 			returnCode = pread(inner_ssd_fd, band[Offset], BLCKSZ, ssd_descriptors[i%NSSDs].ssd_id * BLCKSZ);
+			//读取失败，返回
 			if(returnCode < 0) {
 				printf("[ERROR] flushSSD():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_descriptors[i%NSSDs].ssd_id * BLCKSZ);
 		                exit(-1);
 			}
+			//更改标志
 			bandused[Offset] = 1;
 			//
 		    long tmp_hash = ssdtableHashcode(&ssd_descriptors[i%NSSDs].ssd_tag);
