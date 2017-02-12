@@ -298,22 +298,28 @@ int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
     int returnCode;
 	long ssd_hash;
 	long ssd_id;
-	
+	//i为block的个数，一个一个block的读取
+
 	for (i = 0; i * BLCKSZ < size; i++) {
+		//先得到偏移量
 		ssd_tag.offset = offset + i * BLCKSZ;
+		//根据偏移量求hashcode和ssd id号
 		ssd_hash = ssdtableHashcode(&ssd_tag);
 		ssd_id = ssdtableLookup(&ssd_tag, ssd_hash);
 
+		//如果找到id号
 		if (ssd_id >= 0) {
 			ssd_hdr = &ssd_descriptors[ssd_id];
+			//在inner_ssd_fd读数，得到返回值
 			returnCode = pread(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
-		        if(returnCode < 0) {
-        		        printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
-                		exit(-1);
-	        	}
-	
+		    
+		    if(returnCode < 0) {
+        		printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
+               	exit(-1);
+	        }
 			return returnCode;
 		} else {
+			//否则在smr_fd中读数
 			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
 			if(returnCode < 0) {
         			printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
@@ -321,7 +327,6 @@ int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
         		}
 		}
 	}
-	
 	return 0;
 }
 

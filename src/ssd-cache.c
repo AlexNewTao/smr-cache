@@ -207,9 +207,10 @@ void read_block(off_t offset, char* ssd_buffer)
         
     if (DEBUG)
         printf("[INFO] read():-------offset=%lu\n", offset);
-        
+    
+    //分配空间
     ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
-        
+    
     if (found) {
 		returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		if(returnCode < 0) {            
@@ -223,7 +224,8 @@ void read_block(off_t offset, char* ssd_buffer)
 		if(returnCode < 0) {            
 			printf("[ERROR] read():-------read from smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
 			exit(-1);
-		}    
+		} 
+		//取数到ssd中   
 		returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		if(returnCode < 0) {            
 			printf("[ERROR] read():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
@@ -231,6 +233,7 @@ void read_block(off_t offset, char* ssd_buffer)
 		}    
 
         }
+        //更改标志位
         ssd_buf_hdr->ssd_buf_flag &= ~SSD_BUF_VALID;
         ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID;
 }
