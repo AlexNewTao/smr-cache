@@ -110,21 +110,25 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         return ssd_buf_hdr;
     }
 
-    //得到ssd的buffer
+    //得到ssd的buffer；有clock策略和lru策略
 	ssd_buf_hdr = getSSDStrategyBuffer(EvictStrategy);
 
     unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
     
     SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
-        if (DEBUG)
-                printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
-        if (old_flag & SSD_BUF_DIRTY != 0) {
-                flushSSDBuffer(ssd_buf_hdr);
-        }
-        if (old_flag & SSD_BUF_VALID != 0) {
-                unsigned long old_hash = ssdbuftableHashcode(&old_tag);
-                ssdbuftableDelete(&old_tag, old_hash);
-        }
+        
+
+    if (DEBUG)
+        printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
+       
+    if (old_flag & SSD_BUF_DIRTY != 0) {
+        flushSSDBuffer(ssd_buf_hdr);
+    }
+    if (old_flag & SSD_BUF_VALID != 0) {
+        unsigned long old_hash = ssdbuftableHashcode(&old_tag);
+        ssdbuftableDelete(&old_tag, old_hash);
+    }
+
         ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
         ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
         ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
@@ -151,6 +155,28 @@ static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
 		return getCLOCKBuffer();
     else if (strategy == LRU)
         return getLRUBuffer();
+}
+
+
+//把数据flush到smr
+static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
+{
+	char	ssd_buffer[SSD_BUFFER_SIZE];
+	int 	returnCode;
+
+	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+	if(returnCode < 0) {            
+		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+		exit(-1);
+	}    
+	returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
+	//turnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
+	if(returnCode < 0) {            
+		printf("[ERROR] flushSSDBuffer():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_tag.offset);
+		exit(-1);
+	}
+
+    return NULL;
 }
 
 
