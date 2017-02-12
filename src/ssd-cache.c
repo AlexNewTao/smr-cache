@@ -67,12 +67,17 @@ void write_block(off_t offset, char* ssd_buffer)
 	int  returnCode;
 
 	static SSDBufferTag ssd_buf_tag;
-        static SSDBufferDesc *ssd_buf_hdr;
+    static SSDBufferDesc *ssd_buf_hdr;
 
+    //偏移量赋值
 	ssd_buf_tag.offset = offset;
-        if (DEBUG)
-                printf("[INFO] write():-------offset=%lu\n", offset);
-        ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+
+   	if (DEBUG)
+        printf("[INFO] write():-------offset=%lu\n", offset);
+
+    //根据ssd_buf_tag，分配空间
+    ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+
 	returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 	if(returnCode < 0) {            
 		printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
@@ -82,5 +87,48 @@ void write_block(off_t offset, char* ssd_buffer)
 }
 
 
+//根据ssd_buf_tag，分配空间
+
+static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
+{
+	SSDBufferDesc *ssd_buf_hdr;
+
+	//首先根据ssd_buf_tag得到ssd hash值
+    unsigned long ssd_buf_hash = ssdbuftableHashcode(&ssd_buf_tag);
+
+    //根据hash值查找id号
+    long ssd_buf_id = ssdbuftableLookup(&ssd_buf_tag, ssd_buf_hash);
+
+    //如果找到
+    if (ssd_buf_id >= 0) {
+        ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buf_id];
+        //更改标志位
+       	*found = 1;
+
+        hitInSSDBuffer(ssd_buf_hdr, EvictStrategy);
+        
+        return ssd_buf_hdr;
+    }
+
+	ssd_buf_hdr = getSSDStrategyBuffer(EvictStrategy);
+
+        unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
+        SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
+        if (DEBUG)
+                printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
+        if (old_flag & SSD_BUF_DIRTY != 0) {
+                flushSSDBuffer(ssd_buf_hdr);
+        }
+        if (old_flag & SSD_BUF_VALID != 0) {
+                unsigned long old_hash = ssdbuftableHashcode(&old_tag);
+                ssdbuftableDelete(&old_tag, old_hash);
+        }
+        ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
+        ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
+        ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
+        *found = 0;
+
+        return ssd_buf_hdr;
+}
 
 
