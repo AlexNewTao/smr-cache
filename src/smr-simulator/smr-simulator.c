@@ -223,3 +223,65 @@ static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr)
 {
 	return (ssd_hdr->ssd_tag.offset / BLCKSZ) % (BNDSZ / BLCKSZ);
 }
+
+
+//把数据写入smr
+int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset)
+{
+	SSDTag ssd_tag;
+	SSDDesc *ssd_hdr;
+	long i;
+    int returnCode;
+	long ssd_hash;
+	long ssd_id;
+
+	//循环写入数据
+	for (i = 0; i * BLCKSZ < size; i++) {
+		ssd_tag.offset = offset + i * BLCKSZ;
+
+		//在ssdtable中得到hash和id号
+		ssd_hash = ssdtableHashcode(&ssd_tag);
+		ssd_id = ssdtableLookup(&ssd_tag, ssd_hash);
+
+		//如果找到id号
+		if (ssd_id >= 0) {
+			ssd_hdr = &ssd_descriptors[ssd_id];
+		}
+		else {//否则在使用的ssd链表中查找，并解锁
+			ssd_hdr = getStrategySSD();
+			//releaselock
+            pthread_mutex_unlock(&free_ssd_mutex);
+		}
+
+		ssdtableInsert(&ssd_tag, ssd_hash, ssd_hdr->ssd_id);
+		ssd_hdr->ssd_flag |= SSD_VALID | SSD_DIRTY;
+		ssd_hdr->ssd_tag = ssd_tag;
+		
+		returnCode = pwrite(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+		if(returnCode < 0) {
+        		printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
+		               exit(-1);
+        	}
+		
+	}
+
+}
+
+
+static SSDDesc *getStrategySSD()
+{
+	SSDDesc *ssd_hdr;
+
+	while (ssd_strategy_control->n_usedssd >= NSSDs)
+	{
+		usleep(1);
+		if (DEBUG) printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%ld\n", ssd_strategy_control->n_usedssd);	
+	}
+	//allocatelock
+    pthread_mutex_lock(&free_ssd_mutex);
+	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
+	ssd_strategy_control->n_usedssd++;
+	
+	return &ssd_descriptors[ssd_strategy_control->last_usedssd];
+}
+

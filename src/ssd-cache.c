@@ -162,15 +162,21 @@ static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
 static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
 {
 	char	ssd_buffer[SSD_BUFFER_SIZE];
+
 	int 	returnCode;
 
+	//把buffer的数据读出
 	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+	//错误判断
 	if(returnCode < 0) {            
 		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
 		exit(-1);
-	}    
+	}
+	//把数据写到smr中
 	returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
 	//turnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
+	
+	//判断写入是否成功
 	if(returnCode < 0) {            
 		printf("[ERROR] flushSSDBuffer():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_tag.offset);
 		exit(-1);
