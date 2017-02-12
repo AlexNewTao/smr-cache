@@ -120,10 +120,12 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
 
     if (DEBUG)
         printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
-       
+    
+    //标志位表示为脏数据
     if (old_flag & SSD_BUF_DIRTY != 0) {
         flushSSDBuffer(ssd_buf_hdr);
     }
+    //标志位为可利用
     if (old_flag & SSD_BUF_VALID != 0) {
         unsigned long old_hash = ssdbuftableHashcode(&old_tag);
         ssdbuftableDelete(&old_tag, old_hash);
