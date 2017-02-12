@@ -33,3 +33,23 @@ void initSSDBufferForLRU()
         ssd_buf_hdr_for_lru->last_lru = -1;
 	}
 }
+
+
+
+void *hitInLRUBuffer(SSDBufferDesc *ssd_buf_hdr)
+{
+    moveToLRUHead(&ssd_buffer_descriptors_for_lru[ssd_buf_hdr->ssd_buf_id]);
+
+    return NULL;
+}
+
+
+
+
+
+
+
+
+
+
+

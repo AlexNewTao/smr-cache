@@ -106,7 +106,7 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
        	*found = 1;
 
         hitInSSDBuffer(ssd_buf_hdr, EvictStrategy);
-        
+
         return ssd_buf_hdr;
     }
 
@@ -129,6 +129,16 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         *found = 0;
 
         return ssd_buf_hdr;
+}
+
+//命中方式函数；根据不同的策略，选择不同的调用方式
+static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
+{
+	//如果采用的是clock的方式
+    if (strategy == CLOCK)
+        hitInCLOCKBuffer(ssd_buf_hdr);
+    else if (strategy == LRU)//如果采用的是LRU的调用方式
+        hitInLRUBuffer(ssd_buf_hdr);
 }
 
 
