@@ -55,6 +55,31 @@ static void * initStrategySSDBuffer(SSDEvictionStrategy strategy)
 }
 
 
+/*
+ * write--return the buf_id of buffer according to buf_tag
+ */
+
+//写block数据
+void write_block(off_t offset, char* ssd_buffer)
+{
+    void *ssd_buf_block;
+    bool found;
+	int  returnCode;
+
+	static SSDBufferTag ssd_buf_tag;
+        static SSDBufferDesc *ssd_buf_hdr;
+
+	ssd_buf_tag.offset = offset;
+        if (DEBUG)
+                printf("[INFO] write():-------offset=%lu\n", offset);
+        ssd_buf_hdr = SSDBufferAlloc(ssd_buf_tag, &found);
+	returnCode = pwrite(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
+	if(returnCode < 0) {            
+		printf("[ERROR] write():-------write to ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, offset);
+		exit(-1);
+	}
+        ssd_buf_hdr->ssd_buf_flag |= SSD_BUF_VALID | SSD_BUF_DIRTY;
+}
 
 
 
