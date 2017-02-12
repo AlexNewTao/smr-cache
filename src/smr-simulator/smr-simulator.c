@@ -253,10 +253,12 @@ int smrwrite(int smr_fd, char* buffer, size_t size, off_t offset)
             pthread_mutex_unlock(&free_ssd_mutex);
 		}
 
+
 		ssdtableInsert(&ssd_tag, ssd_hash, ssd_hdr->ssd_id);
 		ssd_hdr->ssd_flag |= SSD_VALID | SSD_DIRTY;
 		ssd_hdr->ssd_tag = ssd_tag;
 		
+		//写数据
 		returnCode = pwrite(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
 		if(returnCode < 0) {
         		printf("[ERROR] smrwrite():-------write to smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
@@ -280,7 +282,7 @@ static SSDDesc *getStrategySSD()
 	}
 	//分配锁
     pthread_mutex_lock(&free_ssd_mutex);
-    
+
 	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
 	ssd_strategy_control->n_usedssd++;
 	

@@ -124,24 +124,5 @@ SSDBufferDesc *getLRUBuffer()
 }
 
 
-//把数据flush到smr
-static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr)
-{
-	char	ssd_buffer[SSD_BUFFER_SIZE];
-	int 	returnCode;
 
-	returnCode = pread(ssd_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
-	if(returnCode < 0) {            
-		printf("[ERROR] flushSSDBuffer():-------read from ssd: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_id * SSD_BUFFER_SIZE);
-		exit(-1);
-	}    
-	returnCode = smrwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
-	//turnCode = pwrite(smr_fd, ssd_buffer, SSD_BUFFER_SIZE, ssd_buf_hdr->ssd_buf_tag.offset);
-	if(returnCode < 0) {            
-		printf("[ERROR] flushSSDBuffer():-------write to smr: fd=%d, errorcode=%d, offset=%lu\n", ssd_fd, returnCode, ssd_buf_hdr->ssd_buf_tag.offset);
-		exit(-1);
-	}
-
-    return NULL;
-}
 
