@@ -272,13 +272,15 @@ static SSDDesc *getStrategySSD()
 {
 	SSDDesc *ssd_hdr;
 
+	//先判断使用的ssd数目是否大于限定的条件；给出提示条件
 	while (ssd_strategy_control->n_usedssd >= NSSDs)
 	{
 		usleep(1);
 		if (DEBUG) printf("[INFO] getStrategySSD():--------ssd_strategy_control->n_usedssd=%ld\n", ssd_strategy_control->n_usedssd);	
 	}
-	//allocatelock
+	//分配锁
     pthread_mutex_lock(&free_ssd_mutex);
+    
 	ssd_strategy_control->last_usedssd = (ssd_strategy_control->last_usedssd + 1) % NSSDs;
 	ssd_strategy_control->n_usedssd++;
 	

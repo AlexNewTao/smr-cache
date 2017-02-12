@@ -112,4 +112,31 @@ static bool isSamessd(SSDTag *tag1, SSDTag *tag2)
 }
 
 
+//在smrwrite中调用ssdtableinsert
+long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
+{
+	if (DEBUG)
+		printf("[INFO] Insert ssd_tag: %lu, hash_code=%lu\n",ssd_tag->offset, hash_code);
+	
+	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
+	while (nowbucket->next_item != NULL && nowbucket != NULL) {
+		if (isSamessd(&nowbucket->hash_key, ssd_tag)) {
+			return nowbucket->ssd_id;
+		}
+		nowbucket = nowbucket->next_item;
+	}
+	if (nowbucket != NULL) {
+		SSDHashBucket *newitem = (SSDHashBucket*)malloc(sizeof(SSDHashBucket));
+		newitem->hash_key = *ssd_tag;
+		newitem->ssd_id = ssd_id;
+		newitem->next_item = NULL;
+		nowbucket->next_item = newitem;
+	}
+	else {
+		nowbucket->hash_key = *ssd_tag;
+		nowbucket->ssd_id = ssd_id;
+		nowbucket->next_item = NULL;
+	}
 
+	return -1;
+}
