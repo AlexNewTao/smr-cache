@@ -110,4 +110,28 @@ long ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned long hash_code, long 
 	return -1;
 }
 
+size_t ssdbuftableLookup(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
+{
+	if (DEBUG)
+		printf("[INFO] Lookup ssd_buf_tag: %lu\n",ssd_buf_tag->offset);
+
+	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
+
+	while (nowbucket != NULL) {
+		if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
+
+			return nowbucket->ssd_buf_id;
+		}
+		nowbucket = nowbucket->next_item;
+	}
+
+	return -1;
+}
+
+static bool isSamebuf(SSDBufferTag *tag1, SSDBufferTag *tag2)
+{
+	if (tag1->offset != tag2->offset)
+		return 0;
+	else return 1;
+}
 
