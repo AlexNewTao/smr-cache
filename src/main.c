@@ -40,9 +40,12 @@ int main()
     //io调用文件
     trace_to_iocall(trace_file_path);
 
+    //关闭文件句柄
+    close(smr_fd);
+    close(ssd_fd);
+    close(inner_ssd_fd);
     
-
-
+	return 0;
 
 
 }
