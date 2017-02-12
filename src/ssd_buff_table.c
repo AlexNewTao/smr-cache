@@ -75,5 +75,39 @@ long ssdbuftableDelete(SSDBufferTag *ssd_buf_tag, unsigned long hash_code)
 }
 
 
+long ssdbuftableInsert(SSDBufferTag *ssd_buf_tag, unsigned long hash_code, long ssd_buf_id)
+{
+	if (DEBUG)
+		printf("[INFO] Insert buf_tag: %lu\n",ssd_buf_tag->offset);
+	//得到bucket
+	SSDBufferHashBucket *nowbucket = GetSSDBufHashBucket(hash_code);
+
+	//寻找插入位置
+	while (nowbucket->next_item != NULL && nowbucket != NULL) {
+		if (isSamebuf(&nowbucket->hash_key, ssd_buf_tag)) {
+			return nowbucket->ssd_buf_id;
+		}
+		nowbucket = nowbucket->next_item;
+	}
+	//如果找到位置
+	if (nowbucket != NULL) {
+		//先分配空间
+		SSDBufferHashBucket *newitem = (SSDBufferHashBucket*)malloc(sizeof(SSDBufferHashBucket));
+		//参数赋值
+		newitem->hash_key = *ssd_buf_tag;
+		newitem->ssd_buf_id = ssd_buf_id;
+		newitem->next_item = NULL;
+		//后移
+		nowbucket->next_item = newitem;
+	}
+	else {
+		//否则插入尾部
+		nowbucket->hash_key = *ssd_buf_tag;
+		nowbucket->ssd_buf_id = ssd_buf_id;
+		nowbucket->next_item = NULL;
+	}
+
+	return -1;
+}
 
 

@@ -127,17 +127,20 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
     }
     //标志位为可利用
     if (old_flag & SSD_BUF_VALID != 0) {
+    	//得到hashcode
         unsigned long old_hash = ssdbuftableHashcode(&old_tag);
+        //删除
         ssdbuftableDelete(&old_tag, old_hash);
     }
 
-        ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
-        ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
-        ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
-        *found = 0;
+    ssdbuftableInsert(&ssd_buf_tag, ssd_buf_hash, ssd_buf_hdr->ssd_buf_id);
+    ssd_buf_hdr->ssd_buf_flag &= ~(SSD_BUF_VALID | SSD_BUF_DIRTY);
+    ssd_buf_hdr->ssd_buf_tag = ssd_buf_tag;
+    *found = 0;
 
-        return ssd_buf_hdr;
+    return ssd_buf_hdr;
 }
+
 
 //命中方式函数；根据不同的策略，选择不同的调用方式
 static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy)
