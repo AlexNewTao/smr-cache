@@ -30,3 +30,7 @@ typedef struct SSDHashBucket
         long                             ssd_id;
         struct SSDHashBucket		*next_item;
 } SSDHashBucket;
+
+
+#define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned long) (hash_code)))
+

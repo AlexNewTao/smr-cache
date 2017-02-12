@@ -117,22 +117,31 @@ long ssdtableInsert(SSDTag *ssd_tag, unsigned long hash_code, long ssd_id)
 {
 	if (DEBUG)
 		printf("[INFO] Insert ssd_tag: %lu, hash_code=%lu\n",ssd_tag->offset, hash_code);
-	
+
+	//根据hashcode得到ssd的hashbucket
 	SSDHashBucket *nowbucket = GetSSDHashBucket(hash_code);
+
+	//循环访问
 	while (nowbucket->next_item != NULL && nowbucket != NULL) {
 		if (isSamessd(&nowbucket->hash_key, ssd_tag)) {
 			return nowbucket->ssd_id;
 		}
 		nowbucket = nowbucket->next_item;
 	}
+
 	if (nowbucket != NULL) {
+		//插入，分配空间
 		SSDHashBucket *newitem = (SSDHashBucket*)malloc(sizeof(SSDHashBucket));
+
+		//参数赋值
 		newitem->hash_key = *ssd_tag;
 		newitem->ssd_id = ssd_id;
 		newitem->next_item = NULL;
+		//后移
 		nowbucket->next_item = newitem;
 	}
 	else {
+		//尾部插入
 		nowbucket->hash_key = *ssd_tag;
 		nowbucket->ssd_id = ssd_id;
 		nowbucket->next_item = NULL;
