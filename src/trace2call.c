@@ -82,11 +82,15 @@ void trace_to_iocall(char* trace_file_path) {
         size = size*1024;
 
         //strstr(str1,str2) 函数用于判断字符串str2是否是str1的子串。如果是，则该函数返回str2在str1中首次出现的地址；否则，返回NULL。
+        //在这里判断是读操作还是写操作
 		if(strstr(write_or_read, "W")) {
 			//分配空间
             ssd_buffer = (char *)malloc(sizeof(char)*BLCKSZ);
+
+            //初始化ssd_buffer标志位
             for (i=0; i<BLCKSZ; i++)
                 ssd_buffer[i] = '1';
+
             while (size > 0 ) {
                 if (DEBUG)
                     printf("[INFO] trace_to_iocall():--------wirte offset=%lu\n", offset);
@@ -96,14 +100,18 @@ void trace_to_iocall(char* trace_file_path) {
                 size -= BLCKSZ;
             }
 		} else if(strstr(write_or_read, "R")) {
-//            if (DEBUG)
-                printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
+			//如果是读操作
+		    if (DEBUG)
+               	printf("[INFO] trace_to_iocall():--------read offset=%lu\n", offset);
 			read_block(offset, ssd_buffer); 
 		}
 	}
 
+	//记录时间
     gettimeofday(&tv_now, &tz_now);
+
     time_now = tv_now.tv_sec + tv_now.tv_usec/1000000.0;
+
     printf("total run time (s) = %lf\n", time_now - time_begin);
 
 	fclose(trace);
