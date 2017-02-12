@@ -56,7 +56,7 @@ static volatile void* moveToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
 
 static volatile void* deleteFromLRU(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
 {
-	
+
     if (ssd_buf_hdr_for_lru->last_lru >= 0) {
         ssd_buffer_descriptors_for_lru[ssd_buf_hdr_for_lru->last_lru].next_lru=ssd_buf_hdr_for_lru->next_lru;
     } else {
@@ -86,6 +86,42 @@ static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
     return NULL;
 }
 
+//采用lru策略得到buffer
+SSDBufferDesc *getLRUBuffer()
+{
+	SSDBufferDesc *ssd_buf_hdr;
+
+	SSDBufferDescForLRU *ssd_buf_hdr_for_lru;
+    
+	if (ssd_buffer_strategy_control->first_freessd >=0 ) {
+		//传递地址
+		ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control->first_freessd];
+
+		ssd_buf_hdr_for_lru = &ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control->first_freessd];
+
+		//释放链表后移
+		ssd_buffer_strategy_control->first_freessd = ssd_buf_hdr->next_freessd;
+
+		//并初始化
+		ssd_buf_hdr->next_freessd = -1;
+
+		//添加到lru的头部
+        addToLRUHead(ssd_buf_hdr_for_lru);
+
+        ssd_buffer_strategy_control->n_usedssd ++;
+
+        return ssd_buf_hdr;
+    }
+
+    ssd_buf_hdr = &ssd_buffer_descriptors[ssd_buffer_strategy_control_for_lru->last_lru];
+
+    
+    ssd_buf_hdr_for_lru = &ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->last_lru];
+
+    moveToLRUHead(ssd_buf_hdr_for_lru);
+
+    return ssd_buf_hdr;
+}
 
 
 
