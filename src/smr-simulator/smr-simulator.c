@@ -289,3 +289,43 @@ static SSDDesc *getStrategySSD()
 	return &ssd_descriptors[ssd_strategy_control->last_usedssd];
 }
 
+//smr read
+int smrread(int smr_fd, char* buffer, size_t size, off_t offset)
+{
+	SSDTag ssd_tag;
+	SSDDesc *ssd_hdr;
+	long i;
+    int returnCode;
+	long ssd_hash;
+	long ssd_id;
+	
+	for (i = 0; i * BLCKSZ < size; i++) {
+		ssd_tag.offset = offset + i * BLCKSZ;
+		ssd_hash = ssdtableHashcode(&ssd_tag);
+		ssd_id = ssdtableLookup(&ssd_tag, ssd_hash);
+
+		if (ssd_id >= 0) {
+			ssd_hdr = &ssd_descriptors[ssd_id];
+			returnCode = pread(inner_ssd_fd, buffer, BLCKSZ, ssd_hdr->ssd_id * BLCKSZ);
+		        if(returnCode < 0) {
+        		        printf("[ERROR] smrread():-------read from inner ssd: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, ssd_hdr->ssd_id * BLCKSZ);
+                		exit(-1);
+	        	}
+	
+			return returnCode;
+		} else {
+			returnCode = pread(smr_fd, buffer, BLCKSZ, offset + i * BLCKSZ);
+			if(returnCode < 0) {
+        			printf("[ERROR] smrread():-------read from smr disk: fd=%d, errorcode=%d, offset=%lu\n", inner_ssd_fd, returnCode, offset + i * BLCKSZ);
+		                exit(-1);
+        		}
+		}
+	}
+	
+	return 0;
+}
+
+
+
+
+
