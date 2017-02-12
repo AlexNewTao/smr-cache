@@ -11,27 +11,21 @@
 
 
 
+#include "../ssd-cache.h"
+#include "smr-simulator.h"
+#include "inner_ssd_buf_table.h"
 
 
+//声明函数
+static SSDDesc *getStrategySSD();
 
+static void* freeStrategySSD();
 
+static volatile  void* flushSSD(SSDDesc *ssd_hdr);
 
+static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
 
 
 
