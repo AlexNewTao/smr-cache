@@ -110,10 +110,12 @@ static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found)
         return ssd_buf_hdr;
     }
 
+    //得到ssd的buffer
 	ssd_buf_hdr = getSSDStrategyBuffer(EvictStrategy);
 
-        unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
-        SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
+    unsigned char old_flag = ssd_buf_hdr->ssd_buf_flag;
+    
+    SSDBufferTag old_tag = ssd_buf_hdr->ssd_buf_tag;
         if (DEBUG)
                 printf("[INFO] SSDBufferAlloc(): old_flag&SSD_BUF_DIRTY=%d\n", old_flag & SSD_BUF_DIRTY);
         if (old_flag & SSD_BUF_DIRTY != 0) {
@@ -139,6 +141,16 @@ static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy st
         hitInCLOCKBuffer(ssd_buf_hdr);
     else if (strategy == LRU)//如果采用的是LRU的调用方式
         hitInLRUBuffer(ssd_buf_hdr);
+}
+
+//得到ssd的buffer
+static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy)
+{
+	//有两种策略，根据策略不同得到不同的buffer
+	if (strategy == CLOCK)
+		return getCLOCKBuffer();
+    else if (strategy == LRU)
+        return getLRUBuffer();
 }
 
 
