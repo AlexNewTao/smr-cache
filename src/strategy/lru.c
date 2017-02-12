@@ -43,11 +43,48 @@ void *hitInLRUBuffer(SSDBufferDesc *ssd_buf_hdr)
     return NULL;
 }
 
+static volatile void* moveToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
+{
+	//先从lru中删除不需要的
+    deleteFromLRU(ssd_buf_hdr_for_lru);
 
+    //再添加到lru的表头
+    addToLRUHead(ssd_buf_hdr_for_lru);
 
+    return NULL;
+}
 
+static volatile void* deleteFromLRU(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
+{
+	
+    if (ssd_buf_hdr_for_lru->last_lru >= 0) {
+        ssd_buffer_descriptors_for_lru[ssd_buf_hdr_for_lru->last_lru].next_lru=ssd_buf_hdr_for_lru->next_lru;
+    } else {
+        ssd_buffer_strategy_control_for_lru->first_lru = ssd_buf_hdr_for_lru->next_lru;
+    }
+    if (ssd_buf_hdr_for_lru->next_lru >= 0 ) {
+       ssd_buffer_descriptors_for_lru[ssd_buf_hdr_for_lru->next_lru].last_lru=ssd_buf_hdr_for_lru->last_lru;
+    } else {
+        ssd_buffer_strategy_control_for_lru->last_lru = ssd_buf_hdr_for_lru->last_lru;
+    }
 
+    return NULL;
+}
 
+static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru)
+{
+    if (ssd_buffer_strategy_control->n_usedssd == 0) {
+       ssd_buffer_strategy_control_for_lru->first_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
+       ssd_buffer_strategy_control_for_lru->last_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
+    } else {
+        ssd_buf_hdr_for_lru->next_lru = ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->first_lru].ssd_buf_id;
+        ssd_buf_hdr_for_lru->last_lru = -1;
+        ssd_buffer_descriptors_for_lru[ssd_buffer_strategy_control_for_lru->first_lru].last_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
+        ssd_buffer_strategy_control_for_lru->first_lru = ssd_buf_hdr_for_lru->ssd_buf_id;
+    }
+
+    return NULL;
+}
 
 
 
