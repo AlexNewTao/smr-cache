@@ -28,8 +28,9 @@ static unsigned long GetSMRBandNumFromSSD(SSDDesc *ssd_hdr);
 static off_t GetSMROffsetInBandFromSSD(SSDDesc *ssd_hdr);
 
 
-
-
+/*
+ * init inner ssd buffer hash table, strategy_control, buffer, work_mem
+ */
 void initSSD()
 {
 	// 申明线程id
@@ -42,7 +43,7 @@ void initSSD()
 	ssd_strategy_control->first_usedssd = 0;
 	ssd_strategy_control->last_usedssd = -1;
 	ssd_strategy_control->n_usedssd = 0;
-
+	
 	ssd_descriptors = (SSDDesc *) malloc(sizeof(SSDDesc)*NSSDs);
 	SSDDesc *ssd_hdr;
 	long i;

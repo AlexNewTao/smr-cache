@@ -49,12 +49,6 @@ extern char             *ssd_blocks;
 extern SSDStrategyControl *ssd_strategy_control;
 extern SSDHashBucket	*ssd_hashtable;
 
-typedef struct
-{
-	unsigned long		n_usedssd;
-	long		first_usedssd;		// Head of list of used ssds
-	long		last_usedssd;		// Tail of list of used ssds
-} SSDStrategyControl;
 
 #define GetSSDblockFromId(ssd_id) ((void *) (ssd_blocks + ((long) (ssd_id)) * SSD_SIZE))
 #define GetSSDHashBucket(hash_code) ((SSDHashBucket *) (ssd_hashtable + (unsigned long) (hash_code)))

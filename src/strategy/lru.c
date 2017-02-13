@@ -27,6 +27,7 @@ void initSSDBufferForLRU()
     
 	//初始化参数，都为-1
     ssd_buffer_strategy_control_for_lru->first_lru = -1;
+    
     ssd_buffer_strategy_control_for_lru->last_lru = -1;
 
     //未描述符分配空间
