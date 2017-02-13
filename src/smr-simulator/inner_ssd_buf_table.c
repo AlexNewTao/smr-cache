@@ -1,5 +1,13 @@
 
 
+#include <stdio.h>
+#include <stdlib.h>
+
+#include "smr-simulator.h"
+#include "../ssd-cache.h"
+
+static bool isSamessd(SSDTag *, SSDTag *);
+
 
 void initSSDTable(size_t size)
 {
