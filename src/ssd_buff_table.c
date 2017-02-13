@@ -5,7 +5,7 @@
 
 #include "ssd-cache.h"
 
-
+static bool isSamebuf(SSDBufferTag *, SSDBufferTag *);
 
 void initSSDBufTable(size_t size)
 {
