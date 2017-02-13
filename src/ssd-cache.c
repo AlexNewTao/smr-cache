@@ -16,7 +16,17 @@
 #include "strategy/clock.h"
 #include "strategy/lru.h"
 
+//function declare
 
+static volatile void* flushSSDBuffer(SSDBufferDesc *ssd_buf_hdr);
+
+static SSDBufferDesc * SSDBufferAlloc(SSDBufferTag ssd_buf_tag, bool *found);
+
+static void * initStrategySSDBuffer(SSDEvictionStrategy strategy);
+
+static SSDBufferDesc * getSSDStrategyBuffer(SSDEvictionStrategy strategy);
+
+static void * hitInSSDBuffer(SSDBufferDesc * ssd_buf_hdr, SSDEvictionStrategy strategy);
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
 
@@ -44,7 +54,6 @@ void initSSDBuffer()
 
     initStrategySSDBuffer(EvictStrategy);
 }
-
 
 static void * initStrategySSDBuffer(SSDEvictionStrategy strategy)
 {
