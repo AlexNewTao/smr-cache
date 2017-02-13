@@ -34,7 +34,6 @@ void *hitInCLOCKBuffer(SSDBufferDesc *ssd_buf_hdr)
     SSDBufferDescForClock *ssd_buf_hdr_for_clock;
     ssd_buf_hdr_for_clock = &ssd_buffer_descriptors_for_clock[ssd_buf_hdr->ssd_buf_id];
     ssd_buf_hdr_for_clock->usage_count++;
-
     return NULL;
 }
 

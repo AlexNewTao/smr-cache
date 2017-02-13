@@ -6,6 +6,14 @@
 #include "lru.h"
 
 
+//function delcare
+static volatile void* addToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru);
+
+static volatile void* deleteFromLRU(SSDBufferDescForLRU *ssd_buf_hdr_for_lru);
+
+static volatile void* moveToLRUHead(SSDBufferDescForLRU *ssd_buf_hdr_for_lru);
+
+
 /*
  * init buffer hash table, strategy_control, buffer, work_mem
  */

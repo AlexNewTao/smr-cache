@@ -21,3 +21,11 @@ typedef struct
 SSDBufferDescForClock	*ssd_buffer_descriptors_for_clock;
 SSDBufferStrategyControlForClock *ssd_buffer_strategy_control_for_clock;
 
+//初始化
+extern void initSSDBufferForClock();
+
+//得到buffer
+extern SSDBufferDesc *getCLOCKBuffer();
+
+//在缓存中命中
+extern void *hitInCLOCKBuffer(SSDBufferDesc *);
